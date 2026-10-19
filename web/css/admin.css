@@ -1,0 +1,43 @@
+/* ===== Admin panel ===== */
+.admin-panel { display: flex; min-height: 100vh; }
+.admin-sidebar {
+  width: 230px; background: var(--bg-2); border-right: 1px solid var(--border);
+  padding: 20px 14px; display: flex; flex-direction: column; gap: 6px;
+  position: sticky; top: 0; height: 100vh;
+}
+.admin-brand { font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #7fb6ff; }
+.admin-nav {
+  text-align: left; padding: 12px 14px; background: transparent; border: none;
+  border-radius: var(--radius-sm); color: var(--text-dim); font-size: 14px;
+  cursor: pointer; width: 100%;
+}
+.admin-nav:hover { background: var(--card); color: var(--text); }
+.admin-nav.active { background: var(--primary); color: #fff; }
+.admin-main { flex: 1; padding: 28px; max-width: 1000px; }
+
+.admin-h1 { font-size: 24px; font-weight: 800; margin-bottom: 20px; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+.stat-card .num { font-size: 30px; font-weight: 800; color: #7fb6ff; }
+.stat-card .lbl { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
+
+.admin-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; }
+.admin-table th, .admin-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+.admin-table th { background: var(--bg-2); color: var(--text-dim); font-weight: 600; }
+.admin-table tr:last-child td { border-bottom: none; }
+
+.badge-on { color: var(--success); } .badge-off { color: var(--danger); }
+.small-btn { padding: 6px 12px; font-size: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-2); color: var(--text); cursor: pointer; }
+.small-btn.danger { color: var(--danger); border-color: rgba(255,92,92,.4); }
+
+.admin-form { max-width: 520px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.warn-box { background: rgba(255,176,32,.1); border: 1px solid rgba(255,176,32,.35); color: #ffd98a; padding: 12px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; }
+
+.admin-auth { max-width: 100%; }
+
+@media (max-width: 720px) {
+  .admin-panel { flex-direction: column; }
+  .admin-sidebar { width: 100%; height: auto; position: static; flex-direction: row; flex-wrap: wrap; }
+  .admin-nav { width: auto; }
+}

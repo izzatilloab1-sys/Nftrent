@@ -1,0 +1,243 @@
+/* ===== NFT Rent — Marketapp uslubidagi to'q dizayn ===== */
+:root {
+  --bg: #0e1116;
+  --bg-2: #161b22;
+  --card: #1c2330;
+  --card-2: #232b3a;
+  --border: #2b3444;
+  --text: #e6edf3;
+  --text-dim: #8b98a9;
+  --primary: #2f80ff;
+  --primary-dark: #1f66e0;
+  --success: #2ecc71;
+  --danger: #ff5c5c;
+  --warning: #ffb020;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  min-height: 100vh;
+  overscroll-behavior-y: none;
+}
+
+.hidden { display: none !important; }
+
+.screen { min-height: 100vh; }
+
+/* ===== Loader ===== */
+.loader {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(14,17,22,.6); backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+}
+.spinner {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--primary);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
+  background: var(--card-2); color: var(--text); padding: 12px 18px;
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+  z-index: 1000; max-width: 88%; text-align: center; font-size: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.toast.error { border-color: var(--danger); color: #ffd3d3; }
+.toast.success { border-color: var(--success); color: #cafbe0; }
+
+/* ===== Auth ===== */
+.auth-wrap { max-width: 440px; margin: 0 auto; padding: 48px 20px 40px; }
+.brand { text-align: center; margin-bottom: 26px; }
+.brand-logo { font-size: 56px; }
+.brand-title {
+  font-size: 30px; font-weight: 800; letter-spacing: .5px;
+  background: linear-gradient(90deg,#2f80ff,#6fb1ff);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.brand-sub { color: var(--text-dim); margin-top: 4px; }
+
+.integration-note {
+  background: rgba(255,176,32,.1); border: 1px solid rgba(255,176,32,.35);
+  color: #ffd98a; padding: 10px 14px; border-radius: var(--radius-sm);
+  font-size: 12.5px; margin-bottom: 18px; text-align: center;
+}
+
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+}
+.auth-card h2 { margin-bottom: 16px; font-size: 20px; }
+.auth-card input {
+  width: 100%; padding: 13px 14px; margin-bottom: 12px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 15px;
+}
+.auth-card input:focus { outline: none; border-color: var(--primary); }
+
+.btn {
+  width: 100%; padding: 14px; border: none; border-radius: var(--radius-sm);
+  font-size: 15px; font-weight: 700; cursor: pointer; transition: .15s;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:active { background: var(--primary-dark); transform: scale(.99); }
+.btn-ghost { background: var(--card-2); color: var(--text); border: 1px solid var(--border); }
+.btn-danger { background: rgba(255,92,92,.15); color: var(--danger); border: 1px solid rgba(255,92,92,.4); }
+.btn-success { background: var(--success); color: #05210f; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.switch-text { text-align: center; margin-top: 14px; color: var(--text-dim); font-size: 13.5px; }
+.switch-text a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+.lang-switch { display: flex; gap: 10px; margin-top: 20px; }
+.lang-btn {
+  flex: 1; padding: 10px; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 13px; cursor: pointer;
+}
+.lang-btn.active { border-color: var(--primary); color: var(--primary); }
+
+/* ===== Main app ===== */
+.main-content { padding: 16px 14px 96px; max-width: 760px; margin: 0 auto; }
+
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.page-title { font-size: 22px; font-weight: 800; }
+
+/* Qidiruv + filtrlar */
+.search-bar { margin-bottom: 12px; }
+.search-bar input {
+  width: 100%; padding: 12px 14px; background: var(--bg-2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); font-size: 14px;
+}
+.filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; }
+.chip {
+  flex: 0 0 auto; padding: 8px 14px; background: var(--card);
+  border: 1px solid var(--border); border-radius: 999px; color: var(--text-dim);
+  font-size: 13px; cursor: pointer; white-space: nowrap;
+}
+.chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.sort-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.sort-row select {
+  flex: 1; padding: 10px; background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 13px;
+}
+
+/* NFT grid */
+.nft-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.nft-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: .15s;
+}
+.nft-card:active { transform: scale(.98); }
+.nft-img {
+  width: 100%; aspect-ratio: 1/1; object-fit: cover; background: var(--bg-2);
+  display: block;
+}
+.nft-body { padding: 10px 12px 12px; }
+.nft-name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+.nft-ref { color: var(--text-dim); font-size: 11.5px; margin-bottom: 6px; }
+.nft-price { font-weight: 800; color: #7fb6ff; font-size: 14px; }
+.nft-price small { color: var(--text-dim); font-weight: 500; font-size: 11px; }
+.nft-badge {
+  display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 6px;
+  background: rgba(47,128,255,.18); color: #8fc0ff; margin-bottom: 4px;
+}
+.nft-badge.unavail { background: rgba(255,92,92,.15); color: var(--danger); }
+
+/* Empty / status */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+.empty-state .emo { font-size: 48px; margin-bottom: 10px; }
+
+/* ===== Profil ===== */
+.profile-head { text-align: center; padding: 20px 0 12px; }
+.profile-avatar {
+  width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 10px;
+  background: linear-gradient(135deg,#2f80ff,#6fb1ff); display: flex;
+  align-items: center; justify-content: center; font-size: 32px; color: #fff;
+}
+.profile-username { font-size: 20px; font-weight: 800; }
+.profile-meta { color: var(--text-dim); font-size: 13px; }
+.menu-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.menu-item {
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); cursor: pointer; font-size: 15px;
+}
+.menu-item:active { background: var(--card-2); }
+.menu-item .ico { font-size: 18px; }
+.menu-item .arrow { margin-left: auto; color: var(--text-dim); }
+
+.balance-card {
+  background: linear-gradient(135deg,#1f66e0,#2f80ff);
+  border-radius: var(--radius); padding: 18px; margin-top: 14px; color: #fff;
+}
+.balance-card .lbl { font-size: 12px; opacity: .85; }
+.balance-card .val { font-size: 26px; font-weight: 800; margin-top: 2px; }
+
+/* ===== Orders ===== */
+.order-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px; margin-bottom: 10px;
+  display: flex; gap: 12px;
+}
+.order-card img { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: var(--bg-2); }
+.order-info { flex: 1; }
+.order-num { font-size: 12px; color: var(--text-dim); }
+.order-name { font-weight: 700; }
+.status-pill {
+  display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 7px; margin-top: 4px;
+}
+.st-pending_payment { background: rgba(255,176,32,.15); color: var(--warning); }
+.st-rental_active { background: rgba(46,204,113,.15); color: var(--success); }
+.st-rental_completed { background: rgba(139,152,169,.15); color: var(--text-dim); }
+.st-draft, .st-cancelled, .st-failed { background: rgba(255,92,92,.12); color: var(--danger); }
+.st-paid { background: rgba(47,128,255,.15); color: #8fc0ff; }
+
+/* ===== Modal (NFT tafsilot) ===== */
+.modal { position: fixed; inset: 0; z-index: 800; display: flex; align-items: flex-end; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.6); }
+.modal-sheet {
+  position: relative; width: 100%; max-width: 760px; margin: 0 auto;
+  background: var(--bg-2); border-radius: 20px 20px 0 0; padding: 18px 16px 28px;
+  max-height: 92vh; overflow-y: auto; border-top: 1px solid var(--border);
+  animation: slideUp .22s ease;
+}
+@keyframes slideUp { from { transform: translateY(40px); opacity: .6; } to { transform: translateY(0); opacity: 1; } }
+.sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 14px; }
+.detail-img { width: 100%; aspect-ratio: 1/1; max-height: 260px; object-fit: contain; background: var(--card); border-radius: var(--radius); margin-bottom: 14px; }
+.detail-name { font-size: 20px; font-weight: 800; }
+.detail-ref { color: var(--text-dim); font-size: 13px; margin-bottom: 14px; }
+
+.duration-row { display: flex; gap: 8px; margin: 10px 0 16px; flex-wrap: wrap; }
+.dur-btn {
+  flex: 1; min-width: 60px; padding: 12px 6px; background: var(--card);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); font-weight: 700; cursor: pointer; text-align: center;
+}
+.dur-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+.price-table { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; }
+.price-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13.5px; }
+.price-row.total { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 10px; font-weight: 800; font-size: 15px; }
+.price-row .dim { color: var(--text-dim); }
+.price-row .refund { color: var(--success); }
+
+.section-label { font-size: 13px; color: var(--text-dim); margin: 10px 0 6px; font-weight: 600; }
+
+/* Forma (parol almashtirish va h.k.) */
+.form-field { margin-bottom: 12px; }
+.form-field label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 6px; }
+.form-field input, .form-field select {
+  width: 100%; padding: 12px 14px; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 15px;
+}

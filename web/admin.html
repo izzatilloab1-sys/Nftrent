@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NFT Rent — Admin</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <link rel="stylesheet" href="/static/css/admin.css" />
+</head>
+<body>
+  <div id="loader" class="loader hidden"><div class="spinner"></div></div>
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Admin login (Telegram ID bilan) -->
+  <div id="admin-auth" class="admin-auth">
+    <div class="card" style="max-width:380px;margin:60px auto;">
+      <h2>🔐 NFT Rent Admin</h2>
+      <p style="color:var(--text-dim);font-size:13px;margin:10px 0 16px">
+        Admin Telegram ID'ingizni kiriting. (Server .env ADMIN_TELEGRAM_IDS da ro'yxatda bo'lishi kerak.)
+      </p>
+      <div class="form-field"><label>Admin Telegram ID</label><input type="number" id="admin-id" placeholder="123456789"/></div>
+      <button class="btn btn-primary" id="admin-enter">Kirish</button>
+    </div>
+  </div>
+
+  <!-- Admin panel -->
+  <div id="admin-panel" class="admin-panel hidden">
+    <aside class="admin-sidebar">
+      <div class="admin-brand">🎁 NFT Rent</div>
+      <nav>
+        <button class="admin-nav active" data-view="dashboard">📊 Boshqaruv</button>
+        <button class="admin-nav" data-view="rate">💱 TON kursi</button>
+        <button class="admin-nav" data-view="nfts">🎁 NFT boshqaruvi</button>
+        <button class="admin-nav" data-view="commissions">💰 Komissiyalar</button>
+        <button class="admin-nav" data-view="payment">🪙 TON to'lov</button>
+        <button class="admin-nav" data-view="users">👥 Foydalanuvchilar</button>
+        <button class="admin-nav" data-view="support">🆘 Support</button>
+      </nav>
+      <button class="btn btn-ghost" id="admin-logout" style="margin-top:auto">Chiqish</button>
+    </aside>
+    <main class="admin-main" id="admin-main"></main>
+  </div>
+
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>

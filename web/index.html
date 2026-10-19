@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>NFT Rent</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+  <!-- Yuklanish indikatori -->
+  <div id="loader" class="loader hidden"><div class="spinner"></div></div>
+
+  <!-- Toast xabarlar -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- ============ AUTH (ro'yxat / login) ============ -->
+  <div id="screen-auth" class="screen">
+    <div class="auth-wrap">
+      <div class="brand">
+        <div class="brand-logo">🎁</div>
+        <h1 class="brand-title">NFT Rent</h1>
+        <p class="brand-sub" data-i18n="brand_sub">NFT sovg'alarini ijaraga oling</p>
+      </div>
+
+      <div class="integration-note" id="integration-note"></div>
+
+      <!-- Login forma -->
+      <form id="form-login" class="card auth-card">
+        <h2 data-i18n="login_title">Kirish</h2>
+        <input type="text" id="login-username" placeholder="Username" autocomplete="username" />
+        <input type="password" id="login-password" placeholder="Parol" autocomplete="current-password" />
+        <button type="submit" class="btn btn-primary" data-i18n="btn_login">Kirish</button>
+        <p class="switch-text"><span data-i18n="no_account">Akkauntingiz yo'qmi?</span>
+          <a href="#" id="to-register" data-i18n="register_link">Ro'yxatdan o'tish</a></p>
+      </form>
+
+      <!-- Register forma -->
+      <form id="form-register" class="card auth-card hidden">
+        <h2 data-i18n="register_title">Ro'yxatdan o'tish</h2>
+        <input type="text" id="reg-username" placeholder="Username" autocomplete="username" />
+        <input type="password" id="reg-password" placeholder="Parol" autocomplete="new-password" />
+        <input type="password" id="reg-password2" placeholder="Parolni qayta kiriting" autocomplete="new-password" />
+        <button type="submit" class="btn btn-primary" data-i18n="btn_register">Ro'yxatdan o'tish</button>
+        <p class="switch-text"><span data-i18n="have_account">Akkauntingiz bormi?</span>
+          <a href="#" id="to-login" data-i18n="login_link">Kirish</a></p>
+      </form>
+
+      <div class="lang-switch">
+        <button class="lang-btn" data-lang="uz">🇺🇿 O'zbek</button>
+        <button class="lang-btn" data-lang="en">🇬🇧 English</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ASOSIY APP ============ -->
+  <div id="screen-app" class="screen hidden">
+    <!-- Sahifalar konteyner -->
+    <main id="main-content" class="main-content"></main>
+
+    <!-- Pastki navigatsiya -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="home">
+        <span class="nav-ico">🏠</span><span data-i18n="nav_home">Bosh</span>
+      </button>
+      <button class="nav-item" data-tab="collections">
+        <span class="nav-ico">🗂️</span><span data-i18n="nav_collections">Kolleksiyalar</span>
+      </button>
+      <button class="nav-item" data-tab="orders">
+        <span class="nav-ico">📦</span><span data-i18n="nav_orders">Buyurtmalar</span>
+      </button>
+      <button class="nav-item" data-tab="profile">
+        <span class="nav-ico">👤</span><span data-i18n="nav_profile">Profil</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- NFT tafsilot / modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-sheet" id="modal-sheet"></div>
+  </div>
+
+  <script src="https://unpkg.com/@tonconnect/ui@2/dist/tonconnect-ui.min.js"></script>
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
