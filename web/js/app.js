@@ -61,7 +61,7 @@
     try {
       const r = await API.register({ username, password, password_confirm, init_data: API.initData(), language: LANG });
       API.setToken(r.token); setLang(r.language);
-      toast(T("order_created") ? "✅" : "", "success");
+      toast("✅", "success");
       await afterLogin();
     } catch (err) { toast(err.detail || T("error_generic"), "error"); }
     finally { showLoader(false); }
@@ -270,7 +270,8 @@
       // Tasdiqlashni kutish (polling)
       await pollPaymentVerify(order.id);
     } catch (err) {
-      toast(err.message || err.detail || T("error_generic"), "error");
+      const m = err && (err.detail || err.message);
+      toast(typeof m === "string" ? m : T("error_generic"), "error");
       switchTab("orders");
     }
   }
@@ -425,10 +426,30 @@
       const note = $("#integration-note");
       if (note) note.textContent = LANG === "en" ? st.message_en : st.message_uz;
     } catch (e) {}
-    // Token bo'lsa — auto login
+
+    // 1) Token bo'lsa — darhol kiramiz (parol so'ralmaydi)
     if (API.getToken()) {
       try { await afterLogin(); return; } catch (e) { API.setToken(null); }
     }
+
+    // 2) Telegram WebApp ichida bo'lsa (initData bor) — AVTOMATIK kirish
+    if (API.initData()) {
+      showLoader(true);
+      try {
+        const r = await API.telegramAuth(LANG);
+        API.setToken(r.token);
+        setLang(r.language);
+        await afterLogin();
+        return;
+      } catch (e) {
+        // initData ishlamasa — login ekraniga tushamiz (zaxira yo'l)
+        console.warn("telegram auto-auth failed:", e && e.detail);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    // 3) Telegram tashqarisida (oddiy brauzer) — login/register ekrani
     showAuth();
   }
   init();

@@ -13,9 +13,10 @@ from app.schemas.schemas import (
     LoginIn,
     ProfileOut,
     RegisterIn,
+    TelegramAuthIn,
     TokenOut,
 )
-from app.services import auth_service, support_service
+from app.services import auth_service, bot_notify_service, support_service
 from app.services.auth_service import AuthError
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -60,6 +61,58 @@ async def register(payload: RegisterIn, request: Request, db: AsyncSession = Dep
         ip=_client_ip(request),
         user_agent=request.headers.get("user-agent"),
     )
+    return TokenOut(token=token, username=user.username, language=user.language)
+
+
+@router.post("/telegram", response_model=TokenOut)
+async def telegram_auth(
+    payload: TelegramAuthIn, request: Request, db: AsyncSession = Depends(get_db)
+):
+    """
+    Telegram WebApp initData orqali AVTOMATIK autentifikatsiya.
+
+    - initData server tomonida HMAC bilan tekshiriladi (soxta bo'lmasin).
+    - Foydalanuvchi bo'lsa -> kiritadi; bo'lmasa -> yangi profil yaratadi.
+    - Yangi profil yaratilganda bot chatga username + parolni yuboradi.
+    - Parol so'ralmaydi; foydalanuvchi to'g'ridan-to'g'ri katalogga o'tadi.
+    """
+    # 1) initData ni tekshiramiz
+    try:
+        info = validate_init_data(payload.init_data)
+    except TelegramAuthError:
+        raise HTTPException(status_code=400, detail=t("err_invalid_initdata", payload.language))
+
+    telegram_id = info.get("telegram_id")
+    if not telegram_id:
+        raise HTTPException(status_code=400, detail=t("err_invalid_initdata", payload.language))
+
+    tg_username = info.get("username")
+    lang_code = (info.get("language_code") or payload.language or "uz")
+    language = "en" if str(lang_code).lower().startswith("en") else "uz"
+
+    # 2) Avtomatik autentifikatsiya (yangi bo'lsa parol qaytadi)
+    try:
+        user, token, plain_password = await auth_service.auto_authenticate(
+            db,
+            telegram_id=int(telegram_id),
+            telegram_username=tg_username,
+            language=language,
+            ip=_client_ip(request),
+            user_agent=request.headers.get("user-agent"),
+        )
+    except AuthError as e:
+        code = 403 if e.key == "err_account_blocked" else 400
+        raise HTTPException(status_code=code, detail=t(e.key, language))
+
+    # 3) Yangi profil bo'lsa — bot chatga username + parol yuboradi (bir marta)
+    if plain_password:
+        await bot_notify_service.send_credentials(
+            telegram_id=int(telegram_id),
+            username=user.username,
+            password=plain_password,
+            language=user.language,
+        )
+
     return TokenOut(token=token, username=user.username, language=user.language)
 
 

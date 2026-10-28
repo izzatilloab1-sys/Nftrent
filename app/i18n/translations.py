@@ -26,6 +26,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "Parolingizni unutib qo'ysangiz, akkauntingizni tiklash uchun Support'ga murojaat qiling.\n\n"
             "⚠️ Xavfsizlik uchun parolingizni Telegram xabarlarida saqlamang."
         ),
+        "bot_account_created_with_password": (
+            "✅ <b>NFT Rent akkauntingiz avtomatik yaratildi!</b>\n\n"
+            "👤 Username: <code>{username}</code>\n"
+            "🔑 Parol: <code>{password}</code>\n\n"
+            "💡 Bu ma'lumotlarni xavfsiz joyda saqlang. Ular boshqa qurilmadan yoki "
+            "brauzerdan kirishingiz uchun kerak bo'ladi.\n"
+            "🔐 Parolni istalgan vaqt <b>Profil → Parolni almashtirish</b> orqali o'zgartirishingiz mumkin.\n\n"
+            "⚠️ Bu parolni hech kimga bermang."
+        ),
         # Umumiy API xatolari
         "err_invalid_initdata": "Telegram tasdiqlash ma'lumoti noto'g'ri.",
         "err_username_taken": "Bu username allaqachon band.",
@@ -64,6 +73,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "🔐 Keep your password safe and never share it. "
             "If you forget it, contact Support to recover your account.\n\n"
             "⚠️ For security, do not store your password in Telegram messages."
+        ),
+        "bot_account_created_with_password": (
+            "✅ <b>Your NFT Rent account was created automatically!</b>\n\n"
+            "👤 Username: <code>{username}</code>\n"
+            "🔑 Password: <code>{password}</code>\n\n"
+            "💡 Keep these safe. You'll need them to log in from another device "
+            "or browser.\n"
+            "🔐 You can change the password anytime via <b>Profile → Change password</b>.\n\n"
+            "⚠️ Never share this password with anyone."
         ),
         "err_invalid_initdata": "Invalid Telegram verification data.",
         "err_username_taken": "This username is already taken.",

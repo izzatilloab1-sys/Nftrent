@@ -18,6 +18,12 @@ class LoginIn(BaseModel):
     password: str
 
 
+class TelegramAuthIn(BaseModel):
+    """Telegram WebApp initData orqali avtomatik autentifikatsiya."""
+    init_data: str
+    language: str = "uz"
+
+
 class ChangePasswordIn(BaseModel):
     old_password: str
     new_password: str = Field(min_length=6, max_length=128)

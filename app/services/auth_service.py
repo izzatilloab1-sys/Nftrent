@@ -1,5 +1,7 @@
 """Autentifikatsiya biznes-mantig'i: ro'yxat, login, parol, sessiya."""
 import re
+import secrets
+import string
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func, select
@@ -15,6 +17,36 @@ from app.models.user import LoginAttempt, Session as UserSession, User
 
 USERNAME_RE = re.compile(r"^[A-Za-z0-9_]{3,32}$")
 MIN_PASSWORD_LEN = 6
+
+# Avtomatik parol uchun (chalkashmaydigan belgilar: O/0, I/l yo'q)
+_PWD_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"
+
+
+def generate_random_password(length: int = 10) -> str:
+    """Xavfsiz tasodifiy parol yaratadi (avtomatik ro'yxat uchun)."""
+    return "".join(secrets.choice(_PWD_ALPHABET) for _ in range(length))
+
+
+async def _unique_username_from_telegram(
+    db: AsyncSession, *, telegram_username: str | None, telegram_id: int
+) -> str:
+    """
+    Telegram ma'lumotidan yagona username yasaydi.
+    Telegram username bo'lsa — o'shani; bo'lmasa user<id>; band bo'lsa raqam qo'shadi.
+    """
+    base = (telegram_username or "").strip().lstrip("@")
+    # Faqat ruxsat etilgan belgilar
+    base = re.sub(r"[^A-Za-z0-9_]", "", base)
+    if len(base) < 3:
+        base = f"user{telegram_id}"
+    base = base[:28]  # qo'shimcha raqamlar uchun joy
+
+    candidate = base
+    suffix = 0
+    while await get_user_by_username(db, candidate):
+        suffix += 1
+        candidate = f"{base}{suffix}"
+    return candidate
 
 
 class AuthError(Exception):
@@ -131,6 +163,66 @@ async def login(
     )
     await db.flush()
     return user, token
+
+
+async def auto_authenticate(
+    db: AsyncSession,
+    *,
+    telegram_id: int,
+    telegram_username: str | None,
+    language: str = "uz",
+    ip: str | None = None,
+    user_agent: str | None = None,
+) -> tuple[User, str, str | None]:
+    """
+    Telegram initData orqali AVTOMATIK autentifikatsiya.
+
+    - Telegram ID bo'yicha foydalanuvchi bo'lsa -> tizimga kiritadi (parol so'ralmaydi)
+    - Bo'lmasa -> yangi profil yaratadi (avtomatik username + tasodifiy parol)
+
+    Qaytaradi: (user, session_token, plain_password_or_None)
+      plain_password faqat YANGI ro'yxatda qaytariladi — bot chatga yuborishi uchun.
+      Mavjud foydalanuvchida None (parol hech qachon qayta ko'rsatilmaydi).
+    """
+    # Mavjud foydalanuvchini Telegram ID bo'yicha topamiz
+    res = await db.execute(select(User).where(User.telegram_id == telegram_id))
+    user = res.scalar_one_or_none()
+
+    plain_password: str | None = None
+
+    if user is None:
+        # Yangi profil — avtomatik username + tasodifiy parol
+        username = await _unique_username_from_telegram(
+            db, telegram_username=telegram_username, telegram_id=telegram_id
+        )
+        plain_password = generate_random_password()
+        user = User(
+            username=username,
+            password_hash=hash_password(plain_password),
+            telegram_id=telegram_id,
+            language=language if language in ("uz", "en") else "uz",
+        )
+        db.add(user)
+        await db.flush()
+
+    if user.is_blocked or not user.is_active:
+        raise AuthError("err_account_blocked")
+
+    # Sessiya tokeni (parol tekshiruvisiz — initData allaqachon tasdiqlangan)
+    token, jti, expires_at = create_session_token(user.id)
+    db.add(
+        UserSession(
+            user_id=user.id,
+            jti=jti,
+            expires_at=expires_at,
+            ip=ip,
+            user_agent=(user_agent or "")[:255],
+        )
+    )
+    db.add(LoginAttempt(username=user.username, ip=ip, success=True))
+    await db.flush()
+
+    return user, token, plain_password
 
 
 async def change_password(

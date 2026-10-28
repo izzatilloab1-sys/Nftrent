@@ -12,16 +12,42 @@ const API = (() => {
     catch (e) { return ""; }
   }
 
+  // Xatolik 'detail' ni har doim o'qiladigan STRING ga aylantiradi.
+  // FastAPI/Pydantic validatsiya (422) da detail massiv/obyekt bo'ladi -> [object Object] oldini olamiz.
+  function normalizeDetail(detail, status) {
+    if (detail == null) return "HTTP " + status;
+    if (typeof detail === "string") return detail;
+    if (Array.isArray(detail)) {
+      // Pydantic: [{loc:[...], msg:"...", type:"..."}]
+      const parts = detail.map((d) => {
+        if (d && typeof d === "object") return d.msg || JSON.stringify(d);
+        return String(d);
+      });
+      return parts.join(", ");
+    }
+    if (typeof detail === "object") {
+      return detail.msg || detail.message || JSON.stringify(detail);
+    }
+    return String(detail);
+  }
+
   async function req(path, { method = "GET", body = null, auth = true } = {}) {
     const headers = { "Content-Type": "application/json" };
     if (auth && token) headers["Authorization"] = "Bearer " + token;
-    const res = await fetch(base + path, {
-      method, headers, body: body ? JSON.stringify(body) : null,
-    });
+    let res;
+    try {
+      res = await fetch(base + path, {
+        method, headers, body: body ? JSON.stringify(body) : null,
+      });
+    } catch (netErr) {
+      const err = new Error("Network error");
+      err.status = 0; err.detail = "Tarmoq xatosi / Network error";
+      throw err;
+    }
     let data = null;
     try { data = await res.json(); } catch (e) { data = null; }
     if (!res.ok) {
-      const msg = (data && data.detail) ? data.detail : ("HTTP " + res.status);
+      const msg = normalizeDetail(data && data.detail, res.status);
       const err = new Error(msg); err.status = res.status; err.detail = msg;
       throw err;
     }
@@ -31,6 +57,7 @@ const API = (() => {
   return {
     setToken, getToken, initData,
     // Auth
+    telegramAuth: (language) => req("/api/auth/telegram", { method: "POST", body: { init_data: initData(), language: language || "uz" }, auth: false }),
     register: (d) => req("/api/auth/register", { method: "POST", body: d, auth: false }),
     login: (d) => req("/api/auth/login", { method: "POST", body: d, auth: false }),
     logout: () => req("/api/auth/logout", { method: "POST" }),
