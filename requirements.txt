@@ -20,7 +20,8 @@ bcrypt==4.2.1
 pyjwt==2.10.1
 
 # --- Config / Validation ---
-pydantic==2.10.3
+# pydantic < 2.10 — aiogram 3.15 bilan mos (aiogram pydantic<2.10 talab qiladi)
+pydantic==2.9.2
 pydantic-settings==2.6.1
 python-dotenv==1.0.1
 
