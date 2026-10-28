@@ -418,8 +418,16 @@
   function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
   // ================= INIT =================
+  // Telegram ichida ekanligini aniqlaymiz (initData bor-yo'qligi orqali).
+  const INSIDE_TELEGRAM = !!API.initData();
+
   async function init() {
     applyI18n();
+
+    // Loader sahifa ochilishi bilanoq ko'rinib turadi (HTML'da). Login ekrani
+    // miltillab ko'rinmasin uchun, qaror qilgunimizcha uni ko'rsatib turamiz.
+    showLoader(true);
+
     // Integratsiya holatini ko'rsatish (demo ekanini OCHIQ aytamiz)
     try {
       const st = await API.integrationStatus();
@@ -429,27 +437,39 @@
 
     // 1) Token bo'lsa — darhol kiramiz (parol so'ralmaydi)
     if (API.getToken()) {
-      try { await afterLogin(); return; } catch (e) { API.setToken(null); }
+      try {
+        await afterLogin();
+        showLoader(false);
+        return;
+      } catch (e) {
+        API.setToken(null);
+      }
     }
 
-    // 2) Telegram WebApp ichida bo'lsa (initData bor) — AVTOMATIK kirish
-    if (API.initData()) {
-      showLoader(true);
+    // 2) Telegram WebApp ichida bo'lsa (initData bor) — AVTOMATIK kirish.
+    //    Login ekrani UMUMAN ko'rsatilmaydi; to'g'ridan-to'g'ri katalogga o'tadi.
+    if (INSIDE_TELEGRAM) {
       try {
         const r = await API.telegramAuth(LANG);
         API.setToken(r.token);
         setLang(r.language);
         await afterLogin();
+        showLoader(false);
         return;
       } catch (e) {
-        // initData ishlamasa — login ekraniga tushamiz (zaxira yo'l)
+        // Telegram ichida avto-kirish ishlamasa — foydalanuvchiga xabar beramiz,
+        // lekin login formasini ko'rsatmaymiz (bu Telegram, parol kerak emas).
         console.warn("telegram auto-auth failed:", e && e.detail);
-      } finally {
         showLoader(false);
+        toast((e && e.detail) || T("error_generic"), "error");
+        // Zaxira sifatida login ekranini ko'rsatamiz (kamdan-kam holat)
+        showAuth();
+        return;
       }
     }
 
-    // 3) Telegram tashqarisida (oddiy brauzer) — login/register ekrani
+    // 3) Telegram tashqarisida (oddiy brauzer) — login/register ekrani (zaxira)
+    showLoader(false);
     showAuth();
   }
   init();

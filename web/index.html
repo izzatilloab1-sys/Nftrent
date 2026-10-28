@@ -8,14 +8,18 @@
   <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
-  <!-- Yuklanish indikatori -->
-  <div id="loader" class="loader hidden"><div class="spinner"></div></div>
+  <!-- Yuklanish indikatori — sahifa ochilganda DARHOL ko'rinadi,
+       init() tugagach yashiriladi (login ekrani miltillab ko'rinmasin) -->
+  <div id="loader" class="loader"><div class="spinner"></div></div>
 
   <!-- Toast xabarlar -->
   <div id="toast" class="toast hidden"></div>
 
   <!-- ============ AUTH (ro'yxat / login) ============ -->
-  <div id="screen-auth" class="screen">
+  <!-- Standart holatda YASHIRIN. JS qaror qiladi:
+       - Telegram ichida (initData bor) -> avto-kirish, bu ekran ko'rinmaydi
+       - Oddiy brauzerda -> bu ekran zaxira sifatida ko'rsatiladi -->
+  <div id="screen-auth" class="screen hidden">
     <div class="auth-wrap">
       <div class="brand">
         <div class="brand-logo">🎁</div>
