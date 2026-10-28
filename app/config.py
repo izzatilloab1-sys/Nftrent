@@ -42,8 +42,15 @@ class Settings(BaseSettings):
 
     # Marketapp integratsiyasi
     marketapp_integration_enabled: bool = False
-    marketapp_api_base: str = ""
-    marketapp_api_key: str = ""
+    marketapp_api_base: str = ""          # masalan: https://api.marketapp.ws
+    marketapp_api_key: str = ""           # eski nom (moslik uchun saqlanadi)
+    marketapp_api_token: str = ""         # hamkorlik tokeni (.env: MARKETAPP_API_TOKEN)
+    marketapp_timeout_seconds: float = 15.0
+
+    @property
+    def marketapp_token(self) -> str:
+        """Token: avval MARKETAPP_API_TOKEN, bo'lmasa MARKETAPP_API_KEY."""
+        return (self.marketapp_api_token or self.marketapp_api_key or "").strip()
 
     @field_validator("admin_telegram_ids")
     @classmethod
