@@ -44,7 +44,7 @@
   function switchView(v) {
     $$(".admin-nav").forEach(b => b.classList.toggle("active", b.dataset.view === v));
     ({ dashboard: viewDashboard, rate: viewRate, nfts: viewNfts, commissions: viewCommissions,
-       payment: viewPayment, users: viewUsers, support: viewSupport })[v]();
+       payment: viewPayment, users: viewUsers, audit: viewAudit, support: viewSupport })[v]();
   }
 
   // ---------- Dashboard ----------
@@ -118,7 +118,7 @@
 
   function nftForm(n = null) {
     const m = $("#admin-main");
-    m.innerHTML = `<div class="admin-h1">${n?'NFT tahrirlash':'NFT qo\\'shish'}</div>
+    m.innerHTML = `<div class="admin-h1">${n ? "NFT tahrirlash" : "NFT qo'shish"}</div>
       <div class="admin-form">
         <div class="form-field"><label>Nomi</label><input id="f-name" value="${n?esc(n.name):''}"/></div>
         <div class="form-field"><label>NFT Ref/ID</label><input id="f-ref" value="${n?esc(n.nft_ref):''}"/></div>
@@ -236,6 +236,27 @@
     };
     let t; $("#u-search").addEventListener("input", e => { clearTimeout(t); t = setTimeout(() => load(e.target.value), 350); });
     load("");
+  }
+
+  // ---------- Audit log ----------
+  async function viewAudit() {
+    const m = $("#admin-main");
+    m.innerHTML = `<div class="admin-h1">📋 Audit log</div>
+      <p style="color:var(--text-dim);font-size:13px;margin-bottom:14px">Muhim admin harakatlari jurnali (eng yangi birinchi).</p>
+      <div id="audit-box">Yuklanmoqda...</div>`;
+    try {
+      const logs = await api("/api/admin/audit-logs?limit=200");
+      if (!logs.length) { $("#audit-box").innerHTML = "<p style='color:var(--text-dim)'>Hozircha yozuvlar yo'q.</p>"; return; }
+      $("#audit-box").innerHTML = `<table class="admin-table">
+        <thead><tr><th>Sana</th><th>Admin ID</th><th>Harakat</th><th>Obyekt</th><th>Tafsilot</th></tr></thead>
+        <tbody>${logs.map(l=>`<tr>
+          <td>${new Date(l.created_at).toLocaleString()}</td>
+          <td>${l.admin_telegram_id||"-"}</td>
+          <td>${esc(l.action)}</td>
+          <td>${esc(l.entity||"-")}${l.entity_id?(" #"+esc(l.entity_id)):""}</td>
+          <td style="max-width:280px;word-break:break-all;font-size:12px">${esc(l.details||"")}</td>
+        </tr>`).join("")}</tbody></table>`;
+    } catch (err) { $("#audit-box").innerHTML = err.detail; }
   }
 
   // ---------- Support ----------

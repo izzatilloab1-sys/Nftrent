@@ -203,6 +203,11 @@ html, body {
 .st-draft, .st-cancelled, .st-failed { background: rgba(255,92,92,.12); color: var(--danger); }
 .st-paid { background: rgba(47,128,255,.15); color: #8fc0ff; }
 
+/* Mening NFT'larim — tafsilot qatorlari */
+.mynft-meta { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
+.mynft-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+.mynft-row .dim { color: var(--text-dim); }
+
 /* ===== Modal (NFT tafsilot) ===== */
 .modal { position: fixed; inset: 0; z-index: 800; display: flex; align-items: flex-end; }
 .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.6); }

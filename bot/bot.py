@@ -51,11 +51,24 @@ def detect_lang(message: Message) -> str:
 
 async def on_start(message: Message):
     lang = detect_lang(message)
-    text = (
+    caption = (
         f"{t('bot_welcome_title', lang)}\n\n"
-        f"{t('bot_welcome_body', lang)}"
+        f"{t('bot_welcome_body', lang)}\n\n"
+        f"{t('bot_price_info', lang)}"
     )
-    await message.answer(text, reply_markup=main_keyboard(lang))
+    kb = main_keyboard(lang)
+
+    # Banner rasm: agar BOT_BANNER_URL sozlangan bo'lsa rasm bilan,
+    # bo'lmasa chiroyli matnli banner bilan yuboramiz.
+    banner = settings.bot_banner_url.strip()
+    if banner:
+        try:
+            await message.answer_photo(photo=banner, caption=caption, reply_markup=kb)
+            return
+        except Exception as e:
+            logger.warning("banner yuborilmadi, matnga o'tamiz: %s", e)
+
+    await message.answer(caption, reply_markup=kb)
 
 
 async def get_support_username() -> str:

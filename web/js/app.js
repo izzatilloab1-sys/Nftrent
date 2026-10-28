@@ -366,11 +366,60 @@
   }
 
   function profileAction(act) {
-    if (act === "orders" || act === "mynfts") { if (act==="mynfts"){state.section="myrentals";} switchTab(act==="mynfts"?"home":"orders"); if(act==="mynfts")renderHome(); }
+    if (act === "mynfts") renderMyNfts();
+    else if (act === "orders") switchTab("orders");
     else if (act === "lang") openLangModal();
     else if (act === "pass") openPassModal();
     else if (act === "support") openSupport();
     else if (act === "logout") doLogout();
+  }
+
+  // "Mening NFT'larim" — faqat FAOL/to'langan ijaralar, to'liq ma'lumot bilan
+  async function renderMyNfts() {
+    const c = $("#main-content");
+    c.innerHTML = `
+      <div class="page-header">
+        <button class="chip" id="back-profile">‹ ${T("nav_profile")}</button>
+        <div class="page-title">${T("my_nfts")}</div>
+        <span></span>
+      </div>
+      <div id="mynfts-list"><div class="empty-state">${T("loading")}</div></div>`;
+    $("#back-profile").addEventListener("click", () => switchTab("profile"));
+    try {
+      const orders = await API.myOrders();
+      // Faqat ijaraga olingan (faol/to'langan/yakunlangan) NFT'lar
+      const mine = orders.filter(o => ["rental_active", "paid", "rental_completed"].includes(o.status));
+      const list = $("#mynfts-list");
+      if (!mine.length) { list.innerHTML = emptyState("🎁", T("empty_my_nfts")); return; }
+      list.innerHTML = mine.map(myNftCard).join("");
+    } catch (err) { $("#mynfts-list").innerHTML = emptyState("⚠️", err.detail); }
+  }
+
+  function myNftCard(o) {
+    let timeRow = "";
+    if (o.status === "rental_active" && o.rental_end_at) {
+      const left = new Date(o.rental_end_at) - new Date();
+      const days = Math.ceil(left / 86400000);
+      timeRow = `<div class="mynft-row"><span class="dim">${T("time_left")}</span><span>${days > 0 ? days + " " + T("days") : T("expired")}</span></div>`;
+    }
+    const startRow = o.rental_start_at
+      ? `<div class="mynft-row"><span class="dim">${T("rental_start")}</span><span>${fmtDate(o.rental_start_at)}</span></div>` : "";
+    const endRow = o.rental_end_at
+      ? `<div class="mynft-row"><span class="dim">${T("rental_end")}</span><span>${fmtDate(o.rental_end_at)}</span></div>` : "";
+    return `
+      <div class="order-card" style="flex-direction:column;align-items:stretch">
+        <div style="display:flex;gap:12px">
+          <img src="${o.nft_image_url || '/static/img/placeholder.svg'}" onerror="this.src='/static/img/placeholder.svg'"/>
+          <div class="order-info">
+            <div class="order-name">${esc(o.nft_name || "NFT")}</div>
+            <div class="order-num">${esc(o.order_number)}</div>
+            <span class="status-pill st-${o.status}">${T("st_"+o.status)}</span>
+          </div>
+        </div>
+        <div class="mynft-meta">
+          ${startRow}${endRow}${timeRow}
+        </div>
+      </div>`;
   }
 
   function openLangModal() {

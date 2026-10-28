@@ -18,6 +18,10 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "btn_start": "▶️ Boshlash",
         "btn_login": "🔑 Kirish",
         "btn_support": "🆘 Support",
+        "bot_price_info": (
+            "💱 <b>Narxlar:</b> har bir NFT ijara narxi <b>TON</b> va <b>so'm</b>da ko'rsatiladi.\n"
+            "📆 Ijara muddatini (1, 3, 7, 30 kun) o'zingiz tanlaysiz."
+        ),
         "bot_support_text": "Yordam kerakmi? Support bilan bog'laning: @{support}",
         "bot_account_created": (
             "✅ <b>NFT Rent akkauntingiz yaratildi!</b>\n\n"
@@ -66,6 +70,10 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "btn_start": "▶️ Start",
         "btn_login": "🔑 Login",
         "btn_support": "🆘 Support",
+        "bot_price_info": (
+            "💱 <b>Prices:</b> each NFT rental price is shown in <b>TON</b> and <b>UZS</b>.\n"
+            "📆 You choose the rental duration (1, 3, 7, 30 days)."
+        ),
         "bot_support_text": "Need help? Contact Support: @{support}",
         "bot_account_created": (
             "✅ <b>Your NFT Rent account has been created!</b>\n\n"

@@ -16,7 +16,8 @@ Marketapp uslubidagi zamonaviy dizayn, o'ziga xos **NFT Rent** brendi bilan.
 
 ## ✨ Asosiy imkoniyatlar
 
-- **Telegram bot** (aiogram 3): boshlash sahifasi, Boshlash / Kirish / Support tugmalari, WebApp'ni ochish.
+- **Telegram bot** (aiogram 3): boshlash sahifasi (banner + narx ma'lumoti), Boshlash / Kirish / Support tugmalari, WebApp'ni ochish.
+- **Avtomatik kirish**: Telegram ichida WebApp ochilganda `initData` orqali avtomatik ro'yxat/login (parol so'ralmaydi); username + parol bot chatiga yuboriladi.
 - **Telegram WebApp**: to'liq ekranli, mobilга mos NFT katalogi, tafsilotlar, ijara hisob-kitobi.
 - **Foydalanuvchi tizimi**: username + parol (bcrypt xesh), login, logout, parol almashtirish, sessiya.
 - **Telegram `initData` tekshiruvi**: server tomonida rasmiy HMAC tasdiqlash.
@@ -25,8 +26,9 @@ Marketapp uslubidagi zamonaviy dizayn, o'ziga xos **NFT Rent** brendi bilan.
 - **Ijara hisob-kitobi**: kunlik narx × muddat + komissiyalar — **backendда** hisoblanadi.
 - **TON kursi**: admin boshqaradi; eski buyurtmalar kursi o'zgarmaydi.
 - **Komissiyalar**: alohida sozlanadigan modul (marketplace, TON tarmog'i, xizmat, qaytariladigan depozit).
-- **Admin panel**: statistika, TON kursi, NFT boshqaruvi, komissiyalar, foydalanuvchilar, Support sozlamasi.
-- **Audit log**: muhim admin harakatlari qayd etiladi.
+- **Mening NFT'larim**: profilда ijaraga olingan NFT'lar — boshlanish/tugash sanasi, qolgan vaqt, holat.
+- **Admin panel**: statistika, TON kursi, NFT boshqaruvi, komissiyalar, TON to'lov sozlamasi, foydalanuvchilar, **audit log**, Support sozlamasi.
+- **Audit log**: muhim admin harakatlari qayd etiladi va admin panelда ko'rinadi.
 - **Testlar**: pytest bilan asosiy biznes-mantiq va xavfsizlik testlari.
 
 ---

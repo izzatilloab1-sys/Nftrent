@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     bot_token: str = ""
     bot_username: str = "NftRentBot"
     webapp_url: str = "https://example.com"
+    bot_banner_url: str = ""  # ixtiyoriy: boshlanish sahifasi uchun banner rasm URL
 
     # Admin
     admin_telegram_ids: str = ""

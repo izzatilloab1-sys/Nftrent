@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import require_admin
 from app.database import get_db
 from app.i18n import t
+from app.models.audit import AuditLog
 from app.models.nft import Nft
 from app.models.order import OrderStatus, RentalOrder
 from app.models.settings import (
@@ -348,3 +349,30 @@ async def set_payment_settings(
         "receiving_address": ps.receiving_address,
         "payments_enabled": ps.payments_enabled,
     }
+
+
+# ---------------- Audit log ----------------
+@router.get("/audit-logs")
+async def audit_logs(
+    limit: int = 100,
+    admin_id: int = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Muhim admin harakatlari jurnali (eng yangi birinchi)."""
+    limit = max(1, min(limit, 500))
+    res = await db.execute(
+        select(AuditLog).order_by(AuditLog.created_at.desc()).limit(limit)
+    )
+    logs = res.scalars().all()
+    return [
+        {
+            "id": l.id,
+            "admin_telegram_id": l.admin_telegram_id,
+            "action": l.action,
+            "entity": l.entity,
+            "entity_id": l.entity_id,
+            "details": l.details,
+            "created_at": l.created_at.isoformat(),
+        }
+        for l in logs
+    ]
