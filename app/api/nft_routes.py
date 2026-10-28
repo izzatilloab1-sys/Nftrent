@@ -124,7 +124,9 @@ async def list_nfts(
     st = marketapp_adapter.get_integration_status()
     if st.enabled:
         try:
-            live_raw = await marketapp_adapter.fetch_rent_nfts()
+            # Frontend sort -> Marketapp SortBy (mavjud bo'lsa)
+            sort_map = {"price_asc": "price_asc", "price_desc": "price_desc", "newest": "newest"}
+            live_raw = await marketapp_adapter.fetch_rent_nfts(sort_by=sort_map.get(sort))
             live = [_live_to_out(item, rate) for item in live_raw]
             # Qidiruv/saralashni live natijalarga ham qo'llaymiz (oddiy)
             if q:

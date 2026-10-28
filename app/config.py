@@ -42,7 +42,7 @@ class Settings(BaseSettings):
 
     # Marketapp integratsiyasi
     marketapp_integration_enabled: bool = False
-    marketapp_api_base: str = ""          # masalan: https://api.marketapp.ws
+    marketapp_api_base: str = "https://marketapp.org"  # Marketapp rasmiy baza URL
     marketapp_api_key: str = ""           # eski nom (moslik uchun saqlanadi)
     marketapp_api_token: str = ""         # hamkorlik tokeni (.env: MARKETAPP_API_TOKEN)
     marketapp_timeout_seconds: float = 15.0

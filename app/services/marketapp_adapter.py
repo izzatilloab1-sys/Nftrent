@@ -27,20 +27,21 @@ import httpx
 
 from app.config import settings
 
-# ---- Endpoint yo'llari (Marketapp OpenAPI schemalariga asoslangan) ----
-# Schemalar: NFTsResponse, RentedNFTsResponse, PayRentNFTBody, RentCategory.
-# Agar Swagger'dagi aniq yo'llar farq qilsa — faqat shu lug'atni yangilash kifoya.
+# ---- Endpoint yo'llari (Marketapp Swagger'ga asoslangan) ----
+# Base URL: https://marketapp.org  (barcha yo'llar /v1/ bilan boshlanadi).
+# Schemalar: NFTsResponse, RentedNFTsResponse, PayRentNFTBody, RentCategory,
+#            RentHistoryResponse, SortBy, HistoryOrderBy.
 _EP = {
-    # RentedNFTsResponse qaytaradi -> ijaraga mavjud NFT'lar
-    "rented_nfts": "/api/v1/rent/nfts",
-    # NFTsResponse qaytaradi -> umumiy NFT ro'yxati (zaxira)
-    "nfts": "/api/v1/nfts",
+    # RentedNFTsResponse / NFTsResponse -> ijaraga mavjud NFT'lar
+    "rented_nfts": "/v1/rent/nfts",
     # Bitta NFT tafsiloti
-    "nft_detail": "/api/v1/rent/nfts/{id}",
-    # PayRentNFTBody qabul qiladi -> ijara to'lovi (kelajakda ishlatiladi)
-    "pay_rent": "/api/v1/rent/pay",
-    # RentCategory ro'yxati (kategoriyalar)
-    "rent_categories": "/api/v1/rent/categories",
+    "nft_detail": "/v1/rent/nfts/{id}",
+    # RentCategory ro'yxati
+    "rent_categories": "/v1/rent/categories",
+    # RentHistoryResponse -> ijara tarixi (HistoryOrderBy parametri bilan)
+    "rent_history": "/v1/rent/history",
+    # PayRentNFTBody -> ijara to'lovi (to'lov yoqilganda ishlatiladi)
+    "pay_rent": "/v1/rent/pay",
 }
 
 
@@ -150,12 +151,16 @@ def _extract_items(data: Any) -> list[dict]:
 
 
 async def fetch_rent_nfts(
-    limit: int = 100, offset: int = 0, category: str | None = None
+    limit: int = 100,
+    offset: int = 0,
+    category: str | None = None,
+    sort_by: str | None = None,
 ) -> list[dict[str, Any]]:
     """
     Marketapp'dan ijaraga mavjud NFT'lar ro'yxatini oladi (RentedNFTsResponse).
 
     - category: ixtiyoriy RentCategory filtri.
+    - sort_by: ixtiyoriy SortBy query parametri.
     - Integratsiya yoqilmagan bo'lsa NotImplementedError -> chaqiruvchi DEMO'ga qaytadi.
     """
     if not (settings.marketapp_integration_enabled and settings.marketapp_api_base and settings.marketapp_token):
@@ -164,7 +169,9 @@ async def fetch_rent_nfts(
     url = _base_url() + _EP["rented_nfts"]
     params: dict[str, Any] = {"limit": limit, "offset": offset}
     if category:
-        params["category"] = category  # RentCategory
+        params["category"] = category    # RentCategory
+    if sort_by:
+        params["SortBy"] = sort_by        # SortBy (Swagger query param)
 
     async with httpx.AsyncClient(timeout=settings.marketapp_timeout_seconds) as client:
         resp = await client.get(url, headers=_headers(), params=params)
@@ -172,6 +179,27 @@ async def fetch_rent_nfts(
         data = resp.json()
 
     return [_normalize_nft(it) for it in _extract_items(data)]
+
+
+async def fetch_rent_history(
+    limit: int = 50, offset: int = 0, order_by: str | None = None
+) -> list[dict[str, Any]]:
+    """
+    Ijara tarixini oladi (RentHistoryResponse, HistoryOrderBy parametri bilan).
+    """
+    if not (settings.marketapp_integration_enabled and settings.marketapp_api_base and settings.marketapp_token):
+        raise NotImplementedError("Marketapp integratsiyasi yoqilmagan (demo rejim).")
+
+    url = _base_url() + _EP["rent_history"]
+    params: dict[str, Any] = {"limit": limit, "offset": offset}
+    if order_by:
+        params["HistoryOrderBy"] = order_by   # HistoryOrderBy (Swagger query param)
+
+    async with httpx.AsyncClient(timeout=settings.marketapp_timeout_seconds) as client:
+        resp = await client.get(url, headers=_headers(), params=params)
+        resp.raise_for_status()
+        data = resp.json()
+    return _extract_items(data)
 
 
 async def fetch_nft_detail(nft_ref: str) -> dict[str, Any] | None:
