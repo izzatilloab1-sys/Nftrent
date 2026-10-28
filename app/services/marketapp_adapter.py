@@ -27,11 +27,20 @@ import httpx
 
 from app.config import settings
 
-# ---- Endpoint yo'llari (Swagger'ga qarab moslang) ----
-# Faqat shu lug'atni real yo'llarga o'zgartirish kifoya.
+# ---- Endpoint yo'llari (Marketapp OpenAPI schemalariga asoslangan) ----
+# Schemalar: NFTsResponse, RentedNFTsResponse, PayRentNFTBody, RentCategory.
+# Agar Swagger'dagi aniq yo'llar farq qilsa — faqat shu lug'atni yangilash kifoya.
 _EP = {
-    "rent_nfts": "/api/v1/rent/nfts",     # ijaraga mavjud NFT'lar ro'yxati
-    "nft_detail": "/api/v1/rent/nfts/{id}",  # bitta NFT tafsiloti
+    # RentedNFTsResponse qaytaradi -> ijaraga mavjud NFT'lar
+    "rented_nfts": "/api/v1/rent/nfts",
+    # NFTsResponse qaytaradi -> umumiy NFT ro'yxati (zaxira)
+    "nfts": "/api/v1/nfts",
+    # Bitta NFT tafsiloti
+    "nft_detail": "/api/v1/rent/nfts/{id}",
+    # PayRentNFTBody qabul qiladi -> ijara to'lovi (kelajakda ishlatiladi)
+    "pay_rent": "/api/v1/rent/pay",
+    # RentCategory ro'yxati (kategoriyalar)
+    "rent_categories": "/api/v1/rent/categories",
 }
 
 
@@ -124,34 +133,45 @@ def _normalize_nft(raw: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-async def fetch_rent_nfts(limit: int = 100, offset: int = 0) -> list[dict[str, Any]]:
+def _extract_items(data: Any) -> list[dict]:
     """
-    Marketapp'dan ijaraga mavjud NFT'lar ro'yxatini oladi va normalizatsiya qiladi.
+    Javobdan NFT ro'yxatini ajratadi.
+    RentedNFTsResponse / NFTsResponse odatda {items:[...]} yoki {nfts:[...]}
+    ko'rinishida bo'ladi; ro'yxat ham bo'lishi mumkin.
+    """
+    if isinstance(data, list):
+        return [x for x in data if isinstance(x, dict)]
+    if isinstance(data, dict):
+        for key in ("items", "nfts", "results", "data", "rented", "list"):
+            val = data.get(key)
+            if isinstance(val, list):
+                return [x for x in val if isinstance(x, dict)]
+    return []
 
-    Integratsiya yoqilmagan bo'lsa NotImplementedError ko'taradi —
-    chaqiruvchi tomon DEMO ma'lumotlarga qaytadi (yolg'on ko'rsatilmaydi).
+
+async def fetch_rent_nfts(
+    limit: int = 100, offset: int = 0, category: str | None = None
+) -> list[dict[str, Any]]:
+    """
+    Marketapp'dan ijaraga mavjud NFT'lar ro'yxatini oladi (RentedNFTsResponse).
+
+    - category: ixtiyoriy RentCategory filtri.
+    - Integratsiya yoqilmagan bo'lsa NotImplementedError -> chaqiruvchi DEMO'ga qaytadi.
     """
     if not (settings.marketapp_integration_enabled and settings.marketapp_api_base and settings.marketapp_token):
         raise NotImplementedError("Marketapp integratsiyasi yoqilmagan (demo rejim).")
 
-    url = _base_url() + _EP["rent_nfts"]
-    params = {"limit": limit, "offset": offset}
+    url = _base_url() + _EP["rented_nfts"]
+    params: dict[str, Any] = {"limit": limit, "offset": offset}
+    if category:
+        params["category"] = category  # RentCategory
+
     async with httpx.AsyncClient(timeout=settings.marketapp_timeout_seconds) as client:
         resp = await client.get(url, headers=_headers(), params=params)
         resp.raise_for_status()
         data = resp.json()
 
-    # Javob strukturasi: ro'yxat yoki {items:[...]} / {nfts:[...]} / {results:[...]}
-    items = data
-    if isinstance(data, dict):
-        for key in ("items", "nfts", "results", "data"):
-            if isinstance(data.get(key), list):
-                items = data[key]
-                break
-    if not isinstance(items, list):
-        items = []
-
-    return [_normalize_nft(it) for it in items if isinstance(it, dict)]
+    return [_normalize_nft(it) for it in _extract_items(data)]
 
 
 async def fetch_nft_detail(nft_ref: str) -> dict[str, Any] | None:
@@ -166,3 +186,40 @@ async def fetch_nft_detail(nft_ref: str) -> dict[str, Any] | None:
             return None
         resp.raise_for_status()
         return _normalize_nft(resp.json())
+
+
+async def fetch_rent_categories() -> list[str]:
+    """RentCategory ro'yxatini oladi (integratsiya yoqilgan bo'lsa)."""
+    if not (settings.marketapp_integration_enabled and settings.marketapp_api_base and settings.marketapp_token):
+        raise NotImplementedError("Marketapp integratsiyasi yoqilmagan (demo rejim).")
+
+    url = _base_url() + _EP["rent_categories"]
+    async with httpx.AsyncClient(timeout=settings.marketapp_timeout_seconds) as client:
+        resp = await client.get(url, headers=_headers())
+        resp.raise_for_status()
+        data = resp.json()
+    if isinstance(data, list):
+        return [str(x) for x in data]
+    if isinstance(data, dict):
+        for key in ("categories", "items", "results"):
+            if isinstance(data.get(key), list):
+                return [str(x) for x in data[key]]
+    return []
+
+
+async def pay_rent(payload: dict[str, Any]) -> dict[str, Any]:
+    """
+    Ijara to'lovini boshlaydi (PayRentNFTBody).
+
+    ⚠️ To'lov oqimi loyihada standart holatda O'CHIQ. Bu funksiya faqat
+    integratsiya + to'lov yoqilganda chaqiriladi. Hamyon maxfiy kaliti
+    ishlatilmaydi — to'lovni foydalanuvchi o'z hamyonida tasdiqlaydi.
+    """
+    if not (settings.marketapp_integration_enabled and settings.marketapp_api_base and settings.marketapp_token):
+        raise NotImplementedError("Marketapp integratsiyasi yoqilmagan (demo rejim).")
+
+    url = _base_url() + _EP["pay_rent"]
+    async with httpx.AsyncClient(timeout=settings.marketapp_timeout_seconds) as client:
+        resp = await client.post(url, headers=_headers(), json=payload)
+        resp.raise_for_status()
+        return resp.json()

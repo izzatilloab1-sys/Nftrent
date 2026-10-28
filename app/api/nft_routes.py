@@ -40,6 +40,33 @@ async def _to_out(db: AsyncSession, nft: Nft, rate: float) -> NftOut:
     )
 
 
+def _live_to_out(item: dict, rate: float) -> NftOut:
+    """Marketapp'dan normalizatsiya qilingan NFT dict'ini NftOut'ga aylantiradi.
+
+    Live NFT'larning lokal DB id'si bo'lmaydi; id=0 va source='marketapp' bilan
+    belgilaymiz. Ro'yxatda ko'rsatish uchun yetarli; tafsilot nft_ref orqali olinadi.
+    """
+    durations = item.get("allowed_durations") or [1, 3, 7, 30]
+    try:
+        durations = [int(x) for x in durations]
+    except Exception:
+        durations = [1, 3, 7, 30]
+    daily = float(item.get("daily_price_ton") or 0)
+    return NftOut(
+        id=0,  # live NFT — lokal id yo'q
+        nft_ref=str(item.get("nft_ref") or ""),
+        name=str(item.get("name") or "NFT"),
+        image_url=str(item.get("image_url") or "/static/img/placeholder.svg"),
+        collection_name=item.get("collection_name"),
+        daily_price_ton=daily,
+        daily_price_uzs=round(daily * rate),
+        allowed_durations=durations,
+        is_available=bool(item.get("is_available", True)),
+        is_popular=False,
+        source="marketapp",
+    )
+
+
 @router.get("/integration-status")
 async def integration_status():
     """Marketapp integratsiyasi holati — demo yoki live ekanini OCHIQ ko'rsatadi."""
@@ -90,7 +117,30 @@ async def list_nfts(
         nfts = [n for n in nfts if duration in _durations(n)]
 
     rate = await currency_service.get_current_rate(db)
-    return [await _to_out(db, n, rate) for n in nfts]
+    local = [await _to_out(db, n, rate) for n in nfts]
+
+    # Marketapp integratsiyasi YOQILGAN bo'lsa — haqiqiy NFT'larni ham qo'shamiz.
+    # O'CHIQ bo'lsa faqat demo (lokal) NFT'lar qaytadi (yolg'on "live" ko'rsatilmaydi).
+    st = marketapp_adapter.get_integration_status()
+    if st.enabled:
+        try:
+            live_raw = await marketapp_adapter.fetch_rent_nfts()
+            live = [_live_to_out(item, rate) for item in live_raw]
+            # Qidiruv/saralashni live natijalarga ham qo'llaymiz (oddiy)
+            if q:
+                ql = q.strip().lower()
+                live = [x for x in live if ql in x.name.lower() or ql in x.nft_ref.lower()]
+            if duration:
+                live = [x for x in live if duration in x.allowed_durations]
+            # Live NFT'lar birinchi ko'rsatiladi
+            return live + local
+        except NotImplementedError:
+            pass
+        except Exception:
+            # Live xato bersa — demo bilan davom etamiz (ilova yiqilmaydi)
+            pass
+
+    return local
 
 
 @router.get("/collections")
