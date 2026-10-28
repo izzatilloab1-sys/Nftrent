@@ -76,14 +76,15 @@ def get_integration_status() -> IntegrationStatus:
 
 
 def _headers() -> dict[str, str]:
-    """Autentifikatsiya sarlavhasi. Swagger'dagi usulga qarab moslang.
+    """Autentifikatsiya sarlavhasi.
 
-    Ko'pchilik API: Authorization: Bearer <token>.
-    Agar Marketapp X-API-Key ishlatsa, shu yerni o'zgartiring.
+    ⚠️ Marketapp Swagger talabi: token "Bearer" prefiksisiz, to'g'ridan-to'g'ri
+    yuboriladi:  Authorization: <TOKEN>
+    (Swagger: "Set the header value to your API token without any prefix like Bearer".)
     """
-    token = settings.marketapp_token
+    token = str(settings.marketapp_token).strip()
     return {
-        "Authorization": f"Bearer {token}",
+        "Authorization": token,
         "Accept": "application/json",
     }
 
