@@ -135,6 +135,12 @@ async def refresh_completed_rentals(db: AsyncSession, *, user_id: int) -> None:
         )
     )
     for order in res.scalars().all():
-        if order.rental_end_at and order.rental_end_at <= now:
+        end = order.rental_end_at
+        if end is None:
+            continue
+        # SQLite naive datetime qaytarishi mumkin -> UTC deb hisoblaymiz
+        if end.tzinfo is None:
+            end = end.replace(tzinfo=timezone.utc)
+        if end <= now:
             order.status = OrderStatus.RENTAL_COMPLETED
     await db.flush()

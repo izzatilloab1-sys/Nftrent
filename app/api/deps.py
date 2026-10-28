@@ -47,8 +47,14 @@ async def get_current_user(
     sess = res.scalar_one_or_none()
     if not sess or sess.revoked:
         raise HTTPException(status_code=401, detail=t("err_not_authenticated"))
-    if sess.expires_at and sess.expires_at < datetime.now(timezone.utc):
-        raise HTTPException(status_code=401, detail=t("err_not_authenticated"))
+    if sess.expires_at:
+        # SQLite timezone saqlamaydi -> naive datetime qaytaradi.
+        # Naive bo'lsa UTC deb hisoblab, aware bilan solishtiramiz.
+        expires_at = sess.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < datetime.now(timezone.utc):
+            raise HTTPException(status_code=401, detail=t("err_not_authenticated"))
 
     res = await db.execute(select(User).where(User.id == int(user_id)))
     user = res.scalar_one_or_none()
